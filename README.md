@@ -20,6 +20,9 @@ git checkout jazzy
 
 cd /home/asus/ros2_ws/src/moveit/fr3_robotiq_moveit_config
 git checkout jazzy
+
+cd /home/asus/ros2_ws/src/moveit/fr3_moveit_servo
+git checkout jazzy
 ```
 
 `ros2_robotiq_gripper` / `franka_description` / `serial` 保持默认分支即可。
