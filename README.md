@@ -1,54 +1,57 @@
-# 宿主机与 Docker 分支使用说明
+# franka_docker 使用说明
 
-本仓库构建的是 **ROS 2 Jazzy (Ubuntu 24.04)** 的 Docker 环境，但宿主机是 **Ubuntu 22.04**。
-请根据运行节点的位置选择正确的 `franka_ros2` 分支。
+本镜像用于 **ROS 2 Jazzy (Ubuntu 24.04)** 的 FR3 + MoveIt Servo 开发环境。
+宿主机为 **Ubuntu 22.04 / ROS 2 Humble**，请注意分支与运行环境匹配。
 
-## 在宿主机运行（Ubuntu 22.04 / ROS 2 Humble）
-1. 切换到 Humble：
-   ```bash
-   cd /home/asus/ros2_ws/src/franka_ros2
-   git checkout humble
-   ```
-2. 在宿主机工作空间构建：
-   ```bash
-   cd /home/asus/ros2_ws
-   source /opt/ros/humble/setup.bash
-   colcon build
-   source install/setup.bash
-   ```
-3. 按需启动你的 launch。
-
-## 在 Docker 内构建/运行（Ubuntu 24.04 / ROS 2 Jazzy）
-1. 切换到 Jazzy：
-   ```bash
-   cd /home/asus/ros2_ws/src/franka_ros2
-   git checkout jazzy
-   ```
-2. 把 `ros2_ws/src` 复制到 `/home/asus/franka_docker/ros2_ws/src/`，再构建镜像。
-
-## Docker 运行（整包挂载）
+## 1. 分支准备（宿主机）
+### Humble（宿主机直接运行）
 ```bash
-docker run --rm -it \
-  --net=host --ipc=host \
-  --cap-add=SYS_NICE --ulimit rtprio=99 --ulimit memlock=-1 \
-  --device=/dev/gripper:/dev/gripper \
-  -v /home/asus/cyclonedds.xml:/etc/cyclonedds/cyclonedds.xml:ro \
-  -e CYCLONEDDS_URI=file:///etc/cyclonedds/cyclonedds.xml \
-  -v /home/asus/ros2_ws/src:/root/ros2_ws/src \
-  franka-jazzy:latest
+cd /home/asus/ros2_ws/src/franka_ros2
+git checkout humble
 ```
 
-容器内构建（首次进入或源码有变更时执行）：
+### Jazzy（容器内运行）
+```bash
+cd /home/asus/ros2_ws/src/franka_ros2
+git checkout jazzy
+
+cd /home/asus/ros2_ws/src/fr3_robotiq_moveit_config
+git checkout jazzy
+```
+
+`ros2_robotiq_gripper` / `franka_description` / `serial` 保持默认分支即可。
+
+## 2. 固定夹爪设备名（宿主机 udev）
+```bash
+KERNEL=="ttyUSB*", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", ATTRS{serial}=="DAK2KIIP", MODE="0666", SYMLINK+="gripper"
+```
+
+## 3. 构建镜像（宿主机）
+```bash
+docker build -t franka-jazzy:latest /home/asus/franka_docker
+```
+
+## 4. 创建容器并后台运行
+```bash
+docker run -d --name franka-jazzy   --net=host --ipc=host   --cap-add=SYS_NICE --ulimit rtprio=99 --ulimit memlock=-1   --device=/dev/gripper:/dev/gripper   -v /home/asus/cyclonedds.xml:/etc/cyclonedds/cyclonedds.xml:ro   -e CYCLONEDDS_URI=file:///etc/cyclonedds/cyclonedds.xml   -v /home/asus/ros2_ws/src:/root/ros2_ws/src   franka-jazzy:latest
+```
+
+## 5. 进入容器
+```bash
+docker exec -it franka-jazzy /bin/bash
+```
+
+## 6. 容器内构建（首次进入或源码变更时）
 ```bash
 cd /root/ros2_ws
 rosdep install --from-paths src --ignore-src -r -y
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
-最小启动检查清单（容器内）：
-1) `franka_ros2` 在 `jazzy` 分支；`fr3_robotiq_moveit_config` 在 `jazzy` 分支  
-2) `ros2_robotiq_gripper` / `franka_description` / `serial` 不需要切换分支（保持默认即可）  
-3) `source /root/ros2_ws/install/setup.bash` 已生效（新 shell 打开会自动加载）
+## 7. 容器内目录说明
+- `/root/ros2_ws`：工作空间（源码在 `/root/ros2_ws/src`，build/install/log 在容器内生成）
+- `/usr/local`：libfranka 安装结果（如 `/usr/local/lib/libfranka.so*`、`/usr/local/bin/*`）
+- libfranka 源码不保留在容器内（构建阶段已清理）
 
-Docker 数据目录：
-- 容器/镜像等数据位于 `/home/docker_data`（由 `/etc/docker/daemon.json` 的 `data-root` 指定）
+## 8. Docker 数据目录
+- 容器/镜像等数据位于 `/home/docker_data`（`/etc/docker/daemon.json` 的 `data-root` 指定）
