@@ -36,7 +36,15 @@ docker build -t franka-jazzy:latest /home/asus/franka_docker
 
 ## 4. 创建容器并后台运行
 ```bash
-docker run -d --name franka-jazzy   --net=host --ipc=host   --cap-add=SYS_NICE --ulimit rtprio=99 --ulimit memlock=-1   --device=/dev/gripper:/dev/gripper   -v /home/asus/cyclonedds.xml:/etc/cyclonedds/cyclonedds.xml:ro   -e CYCLONEDDS_URI=file:///etc/cyclonedds/cyclonedds.xml   -v /home/asus/ros2_ws/src:/root/ros2_ws/src   franka-jazzy:latest
+docker run -d --name franka-jazzy \
+  --net=host --ipc=host \
+  --cap-add=SYS_NICE --ulimit rtprio=99 --ulimit memlock=-1 \
+  --device=/dev/gripper:/dev/gripper \
+  -v /home/asus/cyclonedds.xml:/etc/cyclonedds/cyclonedds.xml:ro \
+  -e CYCLONEDDS_URI=file:///etc/cyclonedds/cyclonedds.xml \
+  -v /home/asus/ros2_ws/src:/root/ros2_ws/src \
+  franka-jazzy:latest \
+  tail -f /dev/null
 ```
 
 ## 5. 进入容器
