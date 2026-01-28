@@ -8,6 +8,9 @@
 ```bash
 cd /home/asus/ros2_ws/src/franka_ros2
 git checkout humble
+
+cd /home/asus/ros2_ws/src/fr3_robotiq_moveit_config
+git checkout humble
 ```
 
 ### Jazzy（容器内运行）
