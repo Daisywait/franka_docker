@@ -49,3 +49,6 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 1) `franka_ros2` 在 `jazzy` 分支；`fr3_robotiq_moveit_config` 在 `jazzy` 分支  
 2) `ros2_robotiq_gripper` / `franka_description` / `serial` 不需要切换分支（保持默认即可）  
 3) `source /root/ros2_ws/install/setup.bash` 已生效（新 shell 打开会自动加载）
+
+Docker 数据目录：
+- 容器/镜像等数据位于 `/home/docker_data`（由 `/etc/docker/daemon.json` 的 `data-root` 指定）
