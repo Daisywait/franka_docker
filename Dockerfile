@@ -4,6 +4,7 @@ FROM osrf/ros:jazzy-desktop
 # 环境变量
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
+ENV TERM=xterm-256color
 
 # 1. 安装基础依赖 (新增了 libpinocchio-dev)
 RUN apt-get update && apt-get install -y \
@@ -48,6 +49,8 @@ RUN apt-get update && apt-get install -y \
 # 5. 开发模式（宿主机挂载 ros2_ws/src 后在容器内构建）
 WORKDIR /root/ros2_ws
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc \
-    && echo "if [ -f /root/ros2_ws/install/setup.bash ]; then source /root/ros2_ws/install/setup.bash; fi" >> /root/.bashrc
+    && echo "if [ -f /root/ros2_ws/install/setup.bash ]; then source /root/ros2_ws/install/setup.bash; fi" >> /root/.bashrc \
+    && echo "force_color_prompt=yes" >> /root/.bashrc \
+    && echo "alias ls='ls --color=auto'" >> /root/.bashrc
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 CMD ["/bin/bash"]
