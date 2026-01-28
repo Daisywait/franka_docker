@@ -57,6 +57,12 @@ rosdep install --from-paths src --ignore-src -r -y
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
+如果只改了 `fr3_moveit_servo` 的 launch 文件，可以用（更快）：
+```bash
+colcon build --symlink-install --packages-select fr3_moveit_servo \
+  --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+
 ## 6. 容器内目录说明
 - `/root/ros2_ws`：工作空间（源码在 `/root/ros2_ws/src`，build/install/log 在容器内生成）
 - `/usr/local`：libfranka 安装结果（如 `/usr/local/lib/libfranka.so*`、`/usr/local/bin/*`）
